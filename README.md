@@ -1,6 +1,8 @@
 # NipponTales App
 
-![NipponTales logo](./assets/images/icon.png)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U7U44W3GR)
+
+![NipponTales logo gerada com DALL·E](./assets/images/icon.png | width=100)
 
 Um aplicativo para ler mangá através da API: [MangaVerseAPI](https://rapidapi.com/sagararofie/api/mangaverse-api)
 
