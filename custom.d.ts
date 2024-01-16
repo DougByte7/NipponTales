@@ -1,0 +1,1 @@
+type Nill = null | undefined

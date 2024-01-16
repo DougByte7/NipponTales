@@ -9,6 +9,7 @@ import { SplashScreen, Stack } from "expo-router"
 import { useEffect } from "react"
 import { useColorScheme, Image } from "react-native"
 import Colors from "../constants/Colors"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,30 +48,34 @@ export default function RootLayout() {
   return <RootLayoutNav />
 }
 
+const queryClient = new QueryClient()
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme()
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
-            title: "Home",
-            headerTitle: () => (
-              <Image
-                className="h-16 w-16"
-                source={require("../assets/images/logo.png")}
-              />
-            ),
-            headerShadowVisible: false,
-            headerTitleAlign: "center",
-            headerStyle: {
-              backgroundColor: Colors[colorScheme ?? "light"].background,
-            },
-          }}
-        />
-      </Stack>
+      <QueryClientProvider client={queryClient}>
+        <Stack>
+          <Stack.Screen
+            name="index"
+            options={{
+              title: "Home",
+              headerTitle: () => (
+                <Image
+                  className="h-16 w-16"
+                  source={require("../assets/images/logo.png")}
+                />
+              ),
+              headerShadowVisible: false,
+              headerTitleAlign: "center",
+              headerStyle: {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+              },
+            }}
+          />
+        </Stack>
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }
