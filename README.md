@@ -2,7 +2,7 @@
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U7U44W3GR)
 
-![NipponTales logo gerada com DALL·E](./assets/images/icon.png | width=100)
+<img src="./assets/images/icon.png" width="150" alt="NipponTales logo gerada com DALL·E">
 
 Um aplicativo para ler mangá através da API: [MangaVerseAPI](https://rapidapi.com/sagararofie/api/mangaverse-api)
 
