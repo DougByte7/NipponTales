@@ -1,22 +1,17 @@
-const tintColorLight = "#788196"
-const tintColorDark = "#fdf9ef"
 const brandColor = "#ff1335"
 
 export default {
+  brand: brandColor,
   light: {
-    brand: brandColor,
     text: "#000",
     background: "#fdf9ef",
-    tint: tintColorLight,
-    tabIconDefault: "#ccc",
-    tabIconSelected: tintColorLight,
+    inputBackground: "#f5e0b3",
+    inputText: "#272932",
   },
   dark: {
-    brand: brandColor,
     text: "#fdf9ef",
-    background: "#1D1A31",
-    tint: tintColorDark,
-    tabIconDefault: "#ccc",
-    tabIconSelected: tintColorDark,
+    background: "#272932",
+    inputBackground: "#3c4150",
+    inputText: "#d6d8e1",
   },
 }
