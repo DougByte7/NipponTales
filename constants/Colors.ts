@@ -4,14 +4,14 @@ export default {
   brand: brandColor,
   light: {
     text: "#000",
+    textDimmed: "#6f7179",
     background: "#fdf9ef",
-    inputBackground: "#f5e0b3",
-    inputText: "#272932",
+    contrastBackground: "#f5e0b3",
   },
   dark: {
     text: "#fdf9ef",
-    background: "#272932",
-    inputBackground: "#3c4150",
-    inputText: "#d6d8e1",
+    textDimmed: "#6f7179",
+    background: "#1F1D2B",
+    contrastBackground: "#252836",
   },
 }
