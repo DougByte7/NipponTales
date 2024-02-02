@@ -6,15 +6,14 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect, useRef } from "react";
-import { AppState, Image, Linking, Pressable } from "react-native";
+import { useEffect } from "react";
+import { Image, Linking, Pressable } from "react-native";
 import { useColorScheme } from "nativewind";
 import { Text } from "../components/Themed";
 
 import Colors from "../constants/Colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -23,7 +22,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -57,25 +56,6 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const { colorScheme } = useColorScheme();
-
-  const appState = useRef(AppState.currentState);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === "active"
-      ) {
-        AsyncStorage.clear();
-      }
-
-      appState.current = nextAppState;
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

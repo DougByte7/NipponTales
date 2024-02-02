@@ -21,7 +21,7 @@ export function getMangas(
   page: number,
   genres: string[] = [],
   type = "all",
-  nsfw?: boolean,
+  nsfw: boolean = false,
 ) {
   const search = buildSearchParams({
     page,

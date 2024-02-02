@@ -1,25 +1,48 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { View, Text } from "../../components/Themed";
 import {
   ActivityIndicator,
   Image,
+  LayoutRectangle,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
 } from "react-native";
 import { getManga, getMangaChapters } from "../../services/manga.service";
-import { Stack, useGlobalSearchParams } from "expo-router";
+import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useColorScheme } from "nativewind";
 import type { ChaptersData, MangasData } from "../../services/manga.interfaces";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, RefObject } from "react";
 import { getData, storeData } from "../../utils/storage";
 import { TextInput } from "react-native-gesture-handler";
-import { IconSearch } from "tabler-icons-react-native";
+import { IconCircleCheck, IconSearch } from "tabler-icons-react-native";
 import Colors from "../../constants/Colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function MangaDetails() {
   const { colorScheme } = useColorScheme();
+  const params = useGlobalSearchParams();
+  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await AsyncStorage.multiRemove([
+      `@Manga/${params.id}`,
+      `@MangaChapters/${params.id}`,
+    ]);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["manga"],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["mangaChapters"],
+    });
+
+    setRefreshing(false);
+  }, []);
 
   return (
     <View className="flex-1 px-2 pt-4">
@@ -33,9 +56,14 @@ export default function MangaDetails() {
           },
         }}
       />
-      <ScrollView>
+      <ScrollView
+        ref={scrollRef}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <Description />
-        <ChaptersList />
+        <ChaptersList scrollRef={scrollRef} />
       </ScrollView>
     </View>
   );
@@ -75,10 +103,15 @@ function Description() {
   );
 }
 
-function ChaptersList() {
+interface ChaptersListProps {
+  scrollRef: RefObject<ScrollView>;
+}
+function ChaptersList({ scrollRef }: ChaptersListProps) {
   const params = useGlobalSearchParams();
   const { data, isLoading } = useGetMangaChapters(params);
   const { colorScheme: theme } = useColorScheme() ?? "light";
+  const [search, setSearch] = useState("");
+  const viewRef = useRef<LayoutRectangle>(null);
   const searchStyles = StyleSheet.create({
     inputContainer: {
       backgroundColor: Colors[theme].background,
@@ -88,6 +121,15 @@ function ChaptersList() {
     },
   });
 
+  const filteredData =
+    (search
+      ? data?.filter((chapter) => chapter.title.includes(search)).sort()
+      : data?.slice().reverse()) ?? [];
+
+  const handleSearchFocus = () => {
+    scrollRef.current?.scrollTo({ y: viewRef.current?.y });
+  };
+
   return isLoading ? (
     <ActivityIndicator size="large" color={Colors.brand} />
   ) : !data ? (
@@ -95,7 +137,10 @@ function ChaptersList() {
       <Text className="text-center">Erro</Text>
     </View>
   ) : (
-    <View className="mb-12 mt-4 rounded-sm bg-support-700 p-4">
+    <View
+      className="mb-12 mt-4 rounded-sm bg-support-700 p-4"
+      onLayout={(event) => (viewRef.current = event.nativeEvent.layout)}
+    >
       <View className="flex-row items-center justify-between gap-3 bg-transparent">
         <Text className="h-11 text-lg font-bold">Capítulos</Text>
         <View
@@ -113,25 +158,28 @@ function ChaptersList() {
             placeholderTextColor={searchStyles.input.color}
             inputMode="search"
             enterKeyHint="search"
+            onChangeText={setSearch}
+            onFocus={handleSearchFocus}
           />
         </View>
       </View>
 
       <View className="flex-row flex-wrap gap-4 bg-transparent">
         <View className="min-w-[150px] grow bg-transparent">
-          {data.slice(0, Math.ceil(data.length / 2)).map((chapter) => (
-            <ListItem key={chapter.id} chapter={chapter} />
-          ))}
+          {filteredData
+            .slice(0, Math.ceil(filteredData.length / 2))
+            .map((chapter) => (
+              <ListItem key={chapter.id} chapter={chapter} />
+            ))}
         </View>
-        {data.length > 1 && (
-          <View className="min-w-[150px] grow bg-transparent">
-            {data
-              .slice(Math.ceil(data.length / 2), data.length)
-              .map((chapter) => (
-                <ListItem key={chapter.id} chapter={chapter} />
-              ))}
-          </View>
-        )}
+
+        <View className="min-w-[150px] grow bg-transparent">
+          {filteredData
+            .slice(Math.ceil(filteredData.length / 2), filteredData.length)
+            .map((chapter) => (
+              <ListItem key={chapter.id} chapter={chapter} />
+            ))}
+        </View>
       </View>
     </View>
   );
@@ -141,16 +189,46 @@ interface ListItem {
   chapter: ChaptersData;
 }
 function ListItem({ chapter }: ListItem) {
-  console.log(chapter);
+  const router = useRouter();
+  const [wasRead, setWasRead] = useState(false);
+
+  const checkIfRead = async () => {
+    const wasRead = (await getData(
+      `@ChapterRead/${chapter.manga}/${chapter.id}`,
+    )) as string;
+
+    if (!wasRead) return;
+
+    setWasRead(true);
+  };
+
+  useEffect(() => {
+    checkIfRead();
+  }, []);
 
   return (
-    <Pressable className="bg-support-900 my-2 rounded p-2">
-      <Text>{chapter.title}</Text>
-      {
+    <Pressable
+      className="my-2 flex-row items-center justify-between rounded bg-support-900 p-2"
+      onPress={() => {
+        router.push({
+          pathname: `/reader/${chapter.id}`,
+          params: { title: chapter.title },
+        });
+      }}
+    >
+      <View>
+        <Text>{chapter.title}</Text>
         <Text className="text-xs text-support-200">
           {new Date(chapter.update_at).toLocaleDateString()}
         </Text>
-      }
+      </View>
+      <View>
+        <IconCircleCheck
+          className={
+            (wasRead ? "bg-success-500" : "bg-support-200") + " rounded-full"
+          }
+        />
+      </View>
     </Pressable>
   );
 }
@@ -158,7 +236,11 @@ function ListItem({ chapter }: ListItem) {
 function useGetMangaDetails(params: Record<string, string | string[]>) {
   const [enabled, setEnabled] = useState(false);
   const [localData, setLocalData] = useState<MangasData>();
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    isRefetching,
+  } = useQuery({
     queryKey: ["manga", params.id],
     queryFn: () => getManga(params.id as string),
     enabled,
@@ -199,14 +281,18 @@ function useGetMangaDetails(params: Record<string, string | string[]>) {
 
   return {
     data,
-    isLoading,
+    isLoading: isLoading || isRefetching,
   };
 }
 
 function useGetMangaChapters(params: Record<string, string | string[]>) {
   const [enabled, setEnabled] = useState(false);
   const [localData, setLocalData] = useState<ChaptersData[]>();
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    isRefetching,
+  } = useQuery({
     queryKey: ["mangaChapters", params.id],
     queryFn: () => getMangaChapters(params.id as string),
     enabled,
@@ -247,6 +333,6 @@ function useGetMangaChapters(params: Record<string, string | string[]>) {
 
   return {
     data,
-    isLoading,
+    isLoading: isLoading || isRefetching,
   };
 }
