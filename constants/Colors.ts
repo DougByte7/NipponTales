@@ -1,12 +1,12 @@
-const brandColor = "#ff1335"
+const brandColor = "#ff1335";
 
 export default {
   brand: brandColor,
   light: {
     text: "#000",
     textDimmed: "#6f7179",
-    background: "#fdf9ef",
-    contrastBackground: "#f5e0b3",
+    background: "#f5e0b3",
+    contrastBackground: "#fdf9ef",
   },
   dark: {
     text: "#fdf9ef",
@@ -14,4 +14,4 @@ export default {
     background: "#1F1D2B",
     contrastBackground: "#252836",
   },
-}
+};

@@ -54,7 +54,7 @@ function Trending() {
 
   return (
     <View className="w-full pt-6">
-      <Text className="pb-2 pl-4 text-xl">Populares</Text>
+      <Text className="pb-2 pl-4 text-xl font-bold">Populares</Text>
 
       {isLoading ? (
         <ActivityIndicator size="large" color={Colors.brand} />
@@ -85,7 +85,7 @@ function MangaFeaturedCard({ data }: MangaCardProps) {
 
   return (
     <Pressable
-      className="m-2 rounded-xl bg-secondary transition-colors active:bg-amber-100 dark:bg-support-700 dark:active:bg-support-600"
+      className="m-2 rounded-xl bg-support-100 transition-colors active:bg-amber-100 dark:bg-support-700 dark:active:bg-support-600"
       onPress={() => {
         router.push(`/manga-details/${data.id}`);
       }}
@@ -117,7 +117,7 @@ function NewReleases() {
 
   return (
     <View className="mb-8 w-full pt-6">
-      <Text className="pb-2 pl-4 text-xl">Novidades</Text>
+      <Text className="pb-2 pl-4 text-xl font-bold">Novidades</Text>
 
       {isLoading ? (
         <ActivityIndicator size="large" color={Colors.brand} />

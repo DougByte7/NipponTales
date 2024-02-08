@@ -5,12 +5,13 @@ import Colors from "../../constants/Colors";
 import { useColorScheme } from "nativewind";
 import { View } from "../../components/Themed";
 import { getMangaImages } from "../../services/manga.service";
-import type {
-  ImagesData,
-  ImagesResponse,
-} from "../../services/manga.interfaces";
+import type { ImagesResponse } from "../../services/manga.interfaces";
 import { storeData } from "../../utils/storage";
-import { IconArrowLeft, IconArrowRight } from "tabler-icons-react-native";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconZoomReset,
+} from "tabler-icons-react-native";
 import { ReactNativeZoomableView } from "@openspacelabs/react-native-zoomable-view";
 import useStorageQuery from "../../hooks/useStorageQuery";
 
@@ -54,8 +55,9 @@ export default function Reader() {
       />
 
       <ReactNativeZoomableView
-        ref={viewRef}
+        ref={viewRef as any}
         style={{ width: size.w }}
+        minZoom={0.1}
         maxZoom={30}
         contentHeight={size.h}
         contentWidth={size.w}
@@ -76,24 +78,32 @@ export default function Reader() {
 
       {page < (data?.length ?? 1) - 1 && (
         <Pressable
-          className="absolute bottom-8 left-1/4 h-16 w-16 items-center justify-center rounded-full bg-support-700 shadow"
+          className="absolute bottom-8 left-1/2 h-16 w-16 -translate-x-28 items-center justify-center rounded-full bg-support-100 shadow dark:bg-support-700"
           onPress={async () => {
             await viewRef.current?.moveTo(250, 250);
             setPage(page + 1);
           }}
         >
-          <IconArrowLeft color="white" />
+          <IconArrowLeft color={colorScheme === "dark" ? "white" : "black"} />
         </Pressable>
       )}
+      <Pressable
+        className="absolute bottom-8 left-1/2 h-16 w-16 -translate-x-8 items-center justify-center rounded-full bg-support-100 shadow dark:bg-support-700"
+        onPress={() => {
+          viewRef.current?.zoomTo(1);
+        }}
+      >
+        <IconZoomReset color={colorScheme === "dark" ? "white" : "black"} />
+      </Pressable>
       {page > 0 && (
         <Pressable
-          className="absolute bottom-8 right-1/4 h-16 w-16 items-center justify-center rounded-full bg-support-700 shadow"
+          className="absolute bottom-8 right-1/2 h-16 w-16 translate-x-28 items-center justify-center rounded-full bg-support-100 shadow dark:bg-support-700"
           onPress={async () => {
             await viewRef.current?.moveTo(250, 250);
             setPage(page - 1);
           }}
         >
-          <IconArrowRight color="white" />
+          <IconArrowRight color={colorScheme === "dark" ? "white" : "black"} />
         </Pressable>
       )}
     </View>

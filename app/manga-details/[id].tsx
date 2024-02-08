@@ -80,7 +80,7 @@ function Description() {
       <Text className="text-center">Erro</Text>
     </View>
   ) : (
-    <View className="flex-row flex-wrap justify-center gap-4 rounded-sm bg-support-700 p-4">
+    <View className="flex-row flex-wrap justify-center gap-4 rounded-sm bg-support-100 p-4 dark:bg-support-700">
       <Image
         className="h-52 w-44 rounded-xl bg-black"
         source={{ uri: data.thumb }}
@@ -138,8 +138,10 @@ function ChaptersList({ scrollRef }: ChaptersListProps) {
     </View>
   ) : (
     <View
-      className="mb-12 mt-4 rounded-sm bg-support-700 p-4"
-      onLayout={(event) => (viewRef.current = event.nativeEvent.layout)}
+      className="mb-12 mt-4 rounded-sm bg-support-100 p-4 dark:bg-support-700"
+      onLayout={(event) =>
+        ((viewRef.current as any) = event.nativeEvent.layout)
+      }
     >
       <View className="flex-row items-center justify-between gap-3 bg-transparent">
         <Text className="h-11 text-lg font-bold">Capítulos</Text>
@@ -189,6 +191,7 @@ interface ListItem {
   chapter: ChaptersData;
 }
 function ListItem({ chapter }: ListItem) {
+  const { colorScheme } = useColorScheme();
   const router = useRouter();
   const [wasRead, setWasRead] = useState(false);
 
@@ -208,7 +211,7 @@ function ListItem({ chapter }: ListItem) {
 
   return (
     <Pressable
-      className="my-2 flex-row items-center justify-between rounded bg-support-900 p-2"
+      className="my-2 flex-row items-center justify-between rounded bg-secondary p-2 dark:bg-support-900"
       onPress={() => {
         router.push({
           pathname: `/reader/${chapter.id}`,
@@ -227,6 +230,7 @@ function ListItem({ chapter }: ListItem) {
           className={
             (wasRead ? "bg-emerald-600" : "bg-support-200") + " rounded-full"
           }
+          color={colorScheme === "dark" ? "black" : "white"}
         />
       </View>
     </Pressable>

@@ -16,7 +16,7 @@ export default function MangaCard({ data }: MangaCardProps) {
         router.push(`/manga-details/${data.id}`);
       }}
     >
-      <View className="flex-row rounded-xl bg-secondary dark:bg-support-700">
+      <View className="flex-row rounded-xl bg-support-100 dark:bg-support-700">
         <Image
           className="mr-2 h-28 w-24 rounded-xl bg-black"
           source={{ uri: data.thumb }}
