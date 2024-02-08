@@ -1,28 +1,24 @@
 import { StatusBar } from "expo-status-bar";
 import {
   Platform,
-  TextInput,
   Image,
   FlatList,
   Pressable,
   ActivityIndicator,
-  useColorScheme,
-  StyleSheet,
   ScrollView,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
-  Dimensions,
 } from "react-native";
-import { IconArrowUp, IconSearch } from "tabler-icons-react-native";
-
+import { IconArrowUp } from "tabler-icons-react-native";
 import { Text, View } from "../components/Themed";
-import { useQuery } from "@tanstack/react-query";
 import { getLatestMangas, getMangas } from "../services/manga.service";
-import { MangasData } from "../services/manga.interfaces";
+import { MangasData, MangasResponse } from "../services/manga.interfaces";
 import Colors from "../constants/Colors";
-import { useEffect, useRef, useState } from "react";
-import { getData, storeData } from "../utils/storage";
+import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
+import useStorageQuery from "../hooks/useStorageQuery";
+import MangaCard from "../components/MangaCard";
+import SearchBar from "../components/SearchBar";
 
 export default function Home() {
   const scrollRef = useRef<ScrollView>(null);
@@ -34,93 +30,27 @@ export default function Home() {
   return (
     <View className="relative flex-1 items-center">
       <ScrollView ref={scrollRef} className="w-full" onScroll={handleScroll}>
-        <SearchInput />
+        <SearchBar />
         <Trending />
         <NewReleases />
       </ScrollView>
       <Affix scrollRef={scrollRef.current} visible={affixVisible} />
       {/* Use a light status bar on iOS to account for the black space above the modal */}
-      <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
-    </View>
-  );
-}
-
-function SearchInput() {
-  const theme = useColorScheme() ?? "light";
-  const searchStyles = StyleSheet.create({
-    inputContainer: {
-      backgroundColor: Colors[theme].contrastBackground,
-    },
-    input: {
-      color: Colors[theme].text,
-    },
-  });
-
-  return (
-    <View className="w-full px-4">
-      <View
-        className="h-14 flex-row items-center rounded-full"
-        style={searchStyles.inputContainer}
-      >
-        <View className="bg-transparent pl-4 pr-2">
-          <IconSearch size={32} color={searchStyles.input.color} />
-        </View>
-        <TextInput
-          role="searchbox"
-          className="h-full w-full"
-          style={searchStyles.input}
-          placeholder="Buscar..."
-          placeholderTextColor={searchStyles.input.color}
-          inputMode="search"
-          enterKeyHint="search"
-        />
-      </View>
+      <StatusBar
+        style={Platform.OS === "ios" ? "light" : "auto"}
+        backgroundColor={"transparent"}
+        translucent
+      />
     </View>
   );
 }
 
 function Trending() {
-  const [enabled, setEnabled] = useState(false);
-  const [localData, setLocalData] = useState<MangasData[]>();
-
-  const { data: response, isLoading } = useQuery({
+  const { data, isLoading } = useStorageQuery<MangasResponse, MangasData[]>({
+    storageKey: "@Mangas",
     queryKey: ["mangas"],
     queryFn: () => getMangas(1),
-    enabled,
   });
-
-  const { data = localData } = response ?? {};
-
-  // Cache response cause the api free tier is only 100 reqs / day
-  const readItemFromStorage = async () => {
-    const item = await getData<{ updatedAt: number; data: MangasData[] }>(
-      "@Mangas",
-    );
-    const sixHours = 1000 * 60 * 60 * 6;
-    if (item && item.updatedAt >= Date.now() - sixHours) {
-      setEnabled(false);
-      setLocalData(item.data);
-      return;
-    }
-
-    setEnabled(true);
-  };
-
-  const writeItemToStorage = async () => {
-    if (!data?.length) return;
-
-    await storeData("@Mangas", { data, updatedAt: Date.now() });
-
-    setEnabled(false);
-  };
-
-  useEffect(() => {
-    readItemFromStorage();
-  }, []);
-
-  useEffect(() => {
-    writeItemToStorage();
-  }, [response]);
 
   return (
     <View className="w-full pt-6">
@@ -137,7 +67,7 @@ function Trending() {
           horizontal
           data={data}
           renderItem={(data) => {
-            return <MangaCard data={data.item} />;
+            return <MangaFeaturedCard data={data.item} />;
           }}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(data) => data.id}
@@ -150,12 +80,12 @@ function Trending() {
 interface MangaCardProps {
   data: MangasData;
 }
-function MangaCard({ data }: MangaCardProps) {
+function MangaFeaturedCard({ data }: MangaCardProps) {
   const router = useRouter();
 
   return (
     <Pressable
-      className="m-2 rounded-xl bg-brand dark:bg-support-700"
+      className="m-2 rounded-xl bg-secondary transition-colors active:bg-amber-100 dark:bg-support-700 dark:active:bg-support-600"
       onPress={() => {
         router.push(`/manga-details/${data.id}`);
       }}
@@ -179,47 +109,11 @@ function MangaCard({ data }: MangaCardProps) {
 }
 
 function NewReleases() {
-  const [enabled, setEnabled] = useState(false);
-  const [localData, setLocalData] = useState<MangasData[]>();
-
-  const { data: response, isLoading } = useQuery({
+  const { data, isLoading } = useStorageQuery<MangasResponse, MangasData[]>({
+    storageKey: "@Latest",
     queryKey: ["latest"],
     queryFn: () => getLatestMangas(1),
-    enabled,
   });
-
-  const { data = localData } = response ?? {};
-
-  // Cache response cause the api free tier is only 100 reqs / day
-  const readItemFromStorage = async () => {
-    const item = await getData<{ updatedAt: number; data: MangasData[] }>(
-      "@Latest",
-    );
-    const sixHours = 1000 * 60 * 60 * 6;
-    if (item && item.updatedAt >= Date.now() - sixHours) {
-      setEnabled(false);
-      setLocalData(item.data);
-      return;
-    }
-
-    setEnabled(true);
-  };
-
-  const writeItemToStorage = async () => {
-    if (!data?.length) return;
-
-    await storeData("@Latest", { data, updatedAt: Date.now() });
-
-    setEnabled(false);
-  };
-
-  useEffect(() => {
-    readItemFromStorage();
-  }, []);
-
-  useEffect(() => {
-    writeItemToStorage();
-  }, [response]);
 
   return (
     <View className="mb-8 w-full pt-6">
@@ -234,53 +128,11 @@ function NewReleases() {
       ) : (
         <View className="flex-row flex-wrap">
           {data.map((item) => {
-            return <MangaUpdated key={item.id} data={item} />;
+            return <MangaCard key={item.id} data={item} />;
           })}
         </View>
       )}
     </View>
-  );
-}
-
-interface MangaUpdatedProps {
-  data: MangasData;
-}
-function MangaUpdated({ data }: MangaUpdatedProps) {
-  const router = useRouter();
-
-  return (
-    <Pressable
-      style={{ minWidth: Dimensions.get("window").width / 2 - 16, margin: 8 }}
-      onPress={() => {
-        router.push(`/manga-details/${data.id}`);
-      }}
-    >
-      <View className="flex-row rounded-xl bg-red-500 dark:bg-support-700">
-        <Image
-          className="mr-2 h-28 w-24 rounded-xl bg-black"
-          source={{ uri: data.thumb }}
-        />
-        <View className="justify-between bg-transparent py-1">
-          <View className="bg-transparent">
-            <Text className="w-60 font-bold" numberOfLines={3}>
-              {data.title}
-            </Text>
-            <Text className="text-sm">{data.total_chapter} capítulos</Text>
-          </View>
-
-          <View className="bg-transparent">
-            {!!data.authors?.[0] && (
-              <Text className="pt-1 text-xs text-support-200" numberOfLines={1}>
-                by {data.authors?.join(", ")}
-              </Text>
-            )}
-            <Text className="text-xs text-support-200">
-              {new Date(data.update_at).toLocaleDateString()}
-            </Text>
-          </View>
-        </View>
-      </View>
-    </Pressable>
   );
 }
 
