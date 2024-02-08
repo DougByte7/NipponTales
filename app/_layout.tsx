@@ -14,6 +14,7 @@ import { Text } from "../components/Themed";
 import Colors from "../constants/Colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { IconMoon, IconSunHigh } from "tabler-icons-react-native";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -55,7 +56,7 @@ export default function RootLayout() {
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  const { colorScheme } = useColorScheme();
+  const { colorScheme, toggleColorScheme } = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -66,6 +67,15 @@ function RootLayoutNav() {
               name="index"
               options={{
                 title: "Home",
+                headerRight: () => (
+                  <Pressable onPress={toggleColorScheme}>
+                    {colorScheme === "dark" ? (
+                      <IconSunHigh color={Colors[colorScheme].text} />
+                    ) : (
+                      <IconMoon />
+                    )}
+                  </Pressable>
+                ),
                 headerTitle: () => (
                   <>
                     <Image
@@ -87,8 +97,8 @@ function RootLayoutNav() {
                         className="h-4 w-6"
                         source={require("../assets/images/cup-border.webp")}
                       />
-                      <Text className="ml-2 font-bold">
-                        Quero um Cafééééé!!
+                      <Text className="ml-2 font-bold text-support-100">
+                        Quero um Cafééé!!
                       </Text>
                     </Pressable>
                   </>
