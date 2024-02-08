@@ -225,7 +225,7 @@ function ListItem({ chapter }: ListItem) {
       <View>
         <IconCircleCheck
           className={
-            (wasRead ? "bg-success-500" : "bg-support-200") + " rounded-full"
+            (wasRead ? "bg-emerald-600" : "bg-support-200") + " rounded-full"
           }
         />
       </View>
