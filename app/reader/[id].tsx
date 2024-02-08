@@ -48,9 +48,8 @@ export default function Reader() {
           title: params.title as string,
           headerShadowVisible: false,
           headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: Colors[colorScheme ?? "light"].background,
-          },
+          headerTransparent: true,
+          headerBackVisible: false,
         }}
       />
 
