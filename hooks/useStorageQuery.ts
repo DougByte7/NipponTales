@@ -12,13 +12,13 @@ type UseStorageQueryParams<T> = {
  * Cache response cause the api free tier is only 100 reqs / day.
  * Must return `data` key in the response payload.
  */
-export default function useStorageQuery<T = unknown, D = undefined>({
+export default function useStorageQuery<T extends { data?: T["data"] }>({
   queryKey,
   queryFn,
   storageKey,
 }: UseStorageQueryParams<T>) {
   const [enabled, setEnabled] = useState(false);
-  const [localData, setLocalData] = useState<T>();
+  const [localData, setLocalData] = useState<T["data"]>();
   const {
     data: response,
     isLoading,
@@ -60,7 +60,7 @@ export default function useStorageQuery<T = unknown, D = undefined>({
   }, [response]);
 
   return {
-    data: data as D,
+    data,
     isLoading: isLoading || isRefetching,
   };
 }

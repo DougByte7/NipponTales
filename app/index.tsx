@@ -46,7 +46,7 @@ export default function Home() {
 }
 
 function Trending() {
-  const { data, isLoading } = useStorageQuery<MangasResponse, MangasData[]>({
+  const { data, isLoading } = useStorageQuery<MangasResponse>({
     storageKey: "@Mangas",
     queryKey: ["mangas"],
     queryFn: () => getMangas(1),
@@ -109,7 +109,7 @@ function MangaFeaturedCard({ data }: MangaCardProps) {
 }
 
 function NewReleases() {
-  const { data, isLoading } = useStorageQuery<MangasResponse, MangasData[]>({
+  const { data, isLoading } = useStorageQuery<MangasResponse>({
     storageKey: "@Latest",
     queryKey: ["latest"],
     queryFn: () => getLatestMangas(1),
